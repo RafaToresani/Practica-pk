@@ -33,22 +33,41 @@ const fetchData = async(numero) =>{
     try{
         const res = await fetch(`${url}${numero}`);
         const data = await res.json();
+        let tipos;
+        if(data.types[1]){
+            tipos=`${data.types[0].type.name} ${data.types[1].type.name}`;
+        }else{
+            tipos=data.types[0].type.name;
+        }
         agregarPokemon(
             data.name.toUpperCase(),
             data.sprites.other.home.front_default,
+            numero,
+            tipos,
         );
     }catch (error){
         console.log(error);
     }
 }
 
-function agregarPokemon(nombre, imagen){
-    const objetoPokemon = {
-        nombre: nombre,
-        imagen: imagen,
-        id: `${Date.now()}`,
+function agregarPokemon(nombre, imagen, numero, tipos){
+    let flag=1;
+    pokemons.forEach((item) => {
+        if(item.id === numero){
+            alerta.classList.remove("d-none");
+            alerta.textContent="El numero ingresado ya se encuentra.";
+            flag=0;
+        }
+    });
+    if(flag===1){
+        const objetoPokemon = {
+            nombre: nombre,
+            imagen: imagen,
+            id: numero,
+            tipos: tipos,
+        }
+        pokemons.unshift(objetoPokemon);
     }
-    pokemons.push(objetoPokemon);
     mostrarPokemons();
 }
 
@@ -60,8 +79,8 @@ function mostrarPokemons(){
         const clone = template.cloneNode(true);
         clone.querySelector(".card-title").textContent=item.nombre;
         clone.getElementById('img').setAttribute("src", item.imagen);
-        clone.querySelector(".btn-danger").dataset.id=item.id;
-        
+        clone.querySelector(".btn-danger").dataset.id=item.id;   
+        clone.querySelector(".tipos").textContent=item.tipos;
 
         fragment.appendChild(clone);
     })
